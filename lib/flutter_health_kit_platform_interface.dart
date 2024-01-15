@@ -48,7 +48,7 @@ abstract class FlutterHealthKitPlatform extends PlatformInterface {
     throw UnimplementedError('querySampleType() has not been implemented.');
   }
 
-  Stream<String> observeQuery(
+  Future<Stream<String>> observeQuery(
     String type, {
     DateTime? startDate,
     DateTime? endDate,

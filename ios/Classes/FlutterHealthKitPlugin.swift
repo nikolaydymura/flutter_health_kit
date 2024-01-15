@@ -3,11 +3,17 @@ import HealthKit
 import UIKit
 
 public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
+    let binaryMessenger: FlutterBinaryMessenger
     lazy var store: HKHealthStore = { HKHealthStore() }()
+    var longRunningQueries: [HKObserverQueryHandler] = []
+    
+    init(binaryMessenger: FlutterBinaryMessenger) {
+        self.binaryMessenger = binaryMessenger
+    }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_health_kit", binaryMessenger: registrar.messenger())
-    let instance = FlutterHealthKitPlugin()
+    let instance = FlutterHealthKitPlugin(binaryMessenger: registrar.messenger())
     registrar.addMethodCallDelegate(instance, channel: channel)
     registrar.addApplicationDelegate(instance)
   }
@@ -104,9 +110,66 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 result(value)
             }
         }
+    case "observeQuery":
+        guard let arguments = call.arguments as? String, let sampleType = arguments.sampleType else {
+            result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
+            return
+        }
+        let handler = HKObserverQueryHandler(store: store, sampleType: sampleType)
+        
+        longRunningQueries.append(handler)
+        result("flutter_health_kit_query_\(handler.id)")
+        FlutterEventChannel(name: "flutter_health_kit_query_\(handler.id)", binaryMessenger: binaryMessenger).setStreamHandler(handler)
     default:
       result(FlutterMethodNotImplemented)
     }
   }
 }
 
+class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
+    let store: HKHealthStore
+    let sampleType: HKSampleType
+    var query: HKObserverQuery?
+    
+    init(store: HKHealthStore, sampleType: HKSampleType) {
+        self.store = store
+        self.sampleType = sampleType
+    }
+    
+    var id: String {
+        sampleType.identifier
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        guard let arguments = arguments as? [String: Any] else {
+            return FlutterError(code: "flutter_health_kit", message: "invalid arguments \(String(describing: arguments))", details: nil)
+        }
+        let start = arguments["startDate"] as! Int
+        let end = arguments["endDate"] as! Int
+        
+        let query = HKObserverQuery(sampleType: sampleType,
+                                    predicate: HKObserverQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: TimeInterval(start)), end: Date(timeIntervalSince1970: TimeInterval(end)))) {query, handler, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    events(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: error))
+                }
+            } else if let identifier = query.objectType?.identifier {
+                DispatchQueue.main.async {
+                    events(identifier)
+                }
+            }
+            handler()
+        }
+        
+        store.execute(query)
+        return nil
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        if let query = self.query {
+            store.stop(query)
+        }
+        return nil
+    }
+    
+}

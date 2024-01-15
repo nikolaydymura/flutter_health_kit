@@ -27,16 +27,17 @@ class FlutterHealthKit {
         .enableBackgroundDelivery(type.identifier, frequency.code);
   }
 
-  static Stream<ObjectTypeId> observeQuery(
+  static Future<Stream<ObjectTypeId>> observeQuery(
     ObjectTypeId type, {
     DateTime? startDate,
     DateTime? endDate,
-  }) {
-    return FlutterHealthKitPlatform.instance.observeQuery(
+  }) async {
+    final stream = await FlutterHealthKitPlatform.instance.observeQuery(
       type.identifier,
       startDate: startDate,
       endDate: endDate,
-    ).map((event) => ObjectTypeId.fromIdentifier(event));
+    );
+    return stream.map((event) => ObjectTypeId.fromIdentifier(event));
   }
 
   static Future<List<T>> querySampleType<T>(

@@ -56,7 +56,7 @@ class Quantity {
           (e) => e.identifier == json['quantityType'],
         ),
         count: json['count'] as int,
-        values: json['values'],
+        values: Map.from(json['values']),
       );
 
   Quantity({
