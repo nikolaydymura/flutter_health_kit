@@ -50,7 +50,7 @@ class Quantity {
         end: DateTime.fromMillisecondsSinceEpoch(
           ((json['endTimestamp'] as double) * 1000).toInt(),
         ),
-        sourceRevision: SourceRevision.fromJson(json['sourceRevision']),
+        sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
         metadata: json['metadata'] as Map<String, dynamic>?,
         quantityType: HKQuantityTypeIdentifier.values.firstWhere(
           (e) => e.identifier == json['quantityType'],

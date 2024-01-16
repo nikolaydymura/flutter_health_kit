@@ -54,17 +54,15 @@ class MethodChannelFlutterHealthKit extends FlutterHealthKitPlatform {
   @override
   Future<List<Map<dynamic, dynamic>>> querySampleType(
     String type, {
-    DateTime? startDate,
-    DateTime? endDate,
     int? limit,
+    Map<String, dynamic>? predicate,
     Iterable<Map<String, dynamic>>? sortDescriptors,
   }) async {
     final result = await methodChannel.invokeListMethod<Map<dynamic, dynamic>>(
         'querySampleType', <String, dynamic>{
       'sampleType': type,
-      if (startDate != null) 'startDate': startDate.millisecondsSinceEpoch,
-      if (endDate != null) 'endDate': endDate.millisecondsSinceEpoch,
       if (limit != null && limit != 0) 'limit': limit,
+      if (predicate != null && predicate.isNotEmpty) 'predicate': predicate,
       if (sortDescriptors != null && sortDescriptors.isNotEmpty)
         'sortDescriptors': sortDescriptors,
     });

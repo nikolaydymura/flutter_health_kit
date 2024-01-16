@@ -1,5 +1,6 @@
 import 'flutter_health_kit_platform_interface.dart';
 import 'models.dart';
+import 'predicate.dart';
 import 'sort.dart';
 import 'types.dart';
 
@@ -42,16 +43,14 @@ class FlutterHealthKit {
 
   static Future<List<T>> querySampleType<T>(
     SampleTypeId type, {
-    DateTime? startDate,
-    DateTime? endDate,
     int? limit,
+    PredicateDescriptor? predicate,
     Iterable<SortDescriptor>? sortDescriptors,
   }) async {
     final result = await FlutterHealthKitPlatform.instance.querySampleType(
       type.identifier,
-      startDate: startDate,
-      endDate: endDate,
       limit: limit,
+      predicate: predicate,
       sortDescriptors: sortDescriptors?.map((e) => e.toJson()).toList(),
     );
     return result.map((e) => mappers[T]?.call(e)).whereType<T>().toList();

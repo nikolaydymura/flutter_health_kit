@@ -53,11 +53,8 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 key: v["key"] as? String,
                 ascending: v["ascending"] as! Bool
             )}
-        let query = HKSampleQuery(sampleType: sampleType, predicate: HKQuery.predicateForSamples(
-            withStart: .distantPast,
-            end: .distantFuture,
-            options: []
-        ), limit: limit, sortDescriptors: sortDescriptors) { (_, data, error) in
+        let predicate = arguments["predicate"] as? [String: Any]
+        let query = HKSampleQuery(sampleType: sampleType, predicate: predicate?.predicate, limit: limit, sortDescriptors: sortDescriptors) { (_, data, error) in
             guard
                 error == nil,
                 let results = data
@@ -162,12 +159,14 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
         }
         
         store.execute(query)
+        self.query = query
         return nil
     }
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         if let query = self.query {
             store.stop(query)
+            self.query = nil
         }
         return nil
     }

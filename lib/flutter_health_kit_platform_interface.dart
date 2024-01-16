@@ -40,9 +40,8 @@ abstract class FlutterHealthKitPlatform extends PlatformInterface {
 
   Future<List<Map<dynamic, dynamic>>> querySampleType(
     String type, {
-    DateTime? startDate,
-    DateTime? endDate,
     int? limit,
+    Map<String, dynamic>? predicate,
     Iterable<Map<String, dynamic>>? sortDescriptors,
   }) {
     throw UnimplementedError('querySampleType() has not been implemented.');

@@ -22,6 +22,10 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
 
 extension HKQuantitySample {
     func toJson(_ units: [HKQuantityType : HKUnit]) -> [String: Any] {
+        var values: [String: Double] = [:]
+        for unit in units.values {
+            values[unit.unitString] = quantity.doubleValue(for: unit)
+        }
         return [
             "uuid": uuid.uuidString,
             "identifier": sampleType.identifier,
@@ -29,7 +33,7 @@ extension HKQuantitySample {
             "endTimestamp": endDate.timeIntervalSince1970,
             "quantityType": quantityType.identifier,
             "count": count,
-            "values": units.map( { ($0.value.unitString, quantity.doubleValue(for: $0.value))}),
+            "values": values,
             "device": device?.toJson,
             "sourceRevision": sourceRevision.toJson,
             "metadate": metadataToJson(metadata),

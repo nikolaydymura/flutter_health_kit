@@ -1,4 +1,37 @@
 import HealthKit
+
+extension [String: Any] {
+    var predicate: NSPredicate? {
+        guard let code = self["code"] as? String else {
+            return nil
+        }
+        if code == "predicateForSamples" {
+            guard let start = self["withStart"] as? Double else {
+                return nil
+            }
+            guard let end = self["end"] as? Double else {
+                return nil
+            }
+            let startDate = Date(timeIntervalSince1970: TimeInterval(start))
+            let endDate = Date(timeIntervalSince1970: TimeInterval(end))
+            let strictStartDate = self["strictStartDate"] as? Bool
+            let strictEndDate = self["strictEndDate"] as? Bool
+            var options: HKQueryOptions = []
+            if strictStartDate == true {
+                options = HKQueryOptions.strictStartDate
+            }
+            if strictEndDate == true {
+                options = HKQueryOptions.strictEndDate
+            }
+            return HKQuery.predicateForSamples(
+                withStart: startDate,
+                end: endDate,
+                options: options
+            )
+        }
+        return nil
+    }
+}
 extension [HKSampleType] {
     var toSet: Set<HKSampleType> {
         Set(self)
