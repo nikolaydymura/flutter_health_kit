@@ -1,15 +1,20 @@
 # flutter_health_kit
 
-A new Flutter project.
+This plugin allows Flutter apps to read and subscribe to changes in the Apple HealthKit store.
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+Request authorization to read data from the HealthKit store:
 
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```dart
+bool isAuthorized = await FlutterHealthKit.requestAuthorization(
+read: [HKSampleTypeIdentifier.workout]);
+```
+
+Read data from the HealthKit store:
+
+```dart
+final workouts = await FlutterHealthKit.querySampleType<Workout>(HKSampleTypeIdentifier.workout);
+```
+
 

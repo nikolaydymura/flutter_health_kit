@@ -1,7 +1,10 @@
 name: flutter_health_kit
-description: "A new Flutter project."
-version: 0.0.1
-homepage:
+description: Apple HealthKit plugin for Flutter to reading and observing records
+version: 0.0.1-dev.1
+homepage: https://github.com/nikolaydymura/flutter_health_kit
+repository: https://github.com/nikolaydymura/flutter_health_kit
+platforms:
+  ios:
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
