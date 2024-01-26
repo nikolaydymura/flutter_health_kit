@@ -31,11 +31,13 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
     func restoreQueries(items: [String]) async throws {
         let read = items.map { $0.sampleType}.compactMap { $0 }
         try await store.requestAuthorization(toShare: Set(), read: read.toSet)
+        try await store.disableAllBackgroundDelivery()
         for item in read {
             try await store.enableBackgroundDelivery(for: item, frequency: .immediate)
             let handler = HKObserverQueryHandler(store: store, sampleType: item)
             longRunningQueries[item] = handler
             handler.start()
+            try await store.enableBackgroundDelivery(for: item, frequency: .immediate)
         }
     }
     
@@ -185,6 +187,12 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
                 } else if let objectType = query.objectType {
                     DispatchQueue.main.async {
                         if let sink = self.eventSink  {
+                            if !self.items.isEmpty {
+                                for item in self.items {
+                                    sink(item.identifier)
+                                }
+                                self.items.removeAll()
+                            }
                             sink(objectType.identifier)
                         } else {
                             self.items.append(objectType)
