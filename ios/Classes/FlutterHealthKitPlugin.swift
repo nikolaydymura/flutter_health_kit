@@ -199,7 +199,7 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
 #if FHK_LOGGER
-        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+        FlutterHealthKitPlugin.logger.warning("HKObserverQueryHandler->\(#function, privacy: .public) \(self.items, privacy: .public)")
 #endif
         for item in items {
             events(item.identifier)
@@ -213,13 +213,11 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
         if query == nil {
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil){query, handler, error in
 #if FHK_LOGGER
-                FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(query.objectType, privacy: .public)")
-                FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+                FlutterHealthKitPlugin.logger.warning("HKObserverQuery \(query.objectType, privacy: .public)")
 #endif
                 if let error = error {
 #if FHK_LOGGER
-                    FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(query.objectType, privacy: .public)")
-                    FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(error.localizedDescription, privacy: .public)")
+                    FlutterHealthKitPlugin.logger.warning("HKObserverQuery \(error.localizedDescription, privacy: .public)")
 #endif
                     DispatchQueue.main.async {
                         self.eventSink?(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
@@ -237,6 +235,9 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
                         } else {
                             self.items.append(objectType)
                         }
+#if FHK_LOGGER
+                FlutterHealthKitPlugin.logger.warning("HKObserverQuery queued \(self.items, privacy: .public)")
+#endif
                     }
                 }
                 handler()
@@ -249,7 +250,7 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
 #if FHK_LOGGER
-        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+        FlutterHealthKitPlugin.logger.warning("HKObserverQueryHandler->\(#function, privacy: .public) \(self.items, privacy: .public)")
 #endif
         if let query = self.query {
             store.stop(query)
