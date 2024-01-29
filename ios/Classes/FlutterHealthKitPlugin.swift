@@ -1,10 +1,16 @@
 import Flutter
 import HealthKit
 import UIKit
+import os
 
 public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
     let binaryMessenger: FlutterBinaryMessenger
     lazy var store: HKHealthStore = { HKHealthStore() }()
+    
+    fileprivate static var logger: Logger = {
+        return Logger(subsystem: Bundle.main.bundleIdentifier!, category: "flutter_health_kit")
+    }()
+    
     var longRunningQueries: [HKSampleType: HKObserverQueryHandler] = [:]
     
     init(binaryMessenger: FlutterBinaryMessenger) {
@@ -33,7 +39,6 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
         try await store.requestAuthorization(toShare: Set(), read: read.toSet)
         try await store.disableAllBackgroundDelivery()
         for item in read {
-            try await store.enableBackgroundDelivery(for: item, frequency: .immediate)
             let handler = HKObserverQueryHandler(store: store, sampleType: item)
             longRunningQueries[item] = handler
             handler.start()
@@ -52,7 +57,7 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
             let read = (arguments["read"] as? [String])?.map { $0.objectType}.compactMap { $0 }
             store.requestAuthorization(toShare: toShare?.toSet, read: read?.toSet) { value, error in
                 if let error = error {
-                    result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: error))
+                    result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
                 } else {
                     result(value)
                 }
@@ -79,7 +84,7 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                     let results = data
                 else {
                     DispatchQueue.main.async {
-                        result(FlutterError(code: "flutter_health_kit", message: error?.localizedDescription, details: error))
+                        result(FlutterError(code: "flutter_health_kit", message: error?.localizedDescription, details: nil))
                     }
                     return
                 }
@@ -106,7 +111,9 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                     }
                     return
                 }
-                result([])
+                DispatchQueue.main.async {
+                    result([])
+                }
             }
             store.execute(query)
         case "enableBackgroundDelivery":
@@ -182,7 +189,7 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil){query, handler, error in
                 if let error = error {
                     DispatchQueue.main.async {
-                        self.eventSink?(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: error))
+                        self.eventSink?(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
                     }
                 } else if let objectType = query.objectType {
                     DispatchQueue.main.async {

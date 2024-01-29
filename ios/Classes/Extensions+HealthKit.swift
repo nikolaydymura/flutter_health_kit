@@ -12,6 +12,26 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
             result[key] = metadata[key]
         } else if metadata[key] is Double {
             result[key] = metadata[key]
+        } else if let data = metadata[key] as? HKQuantity {
+#if DEBUG
+            let distance = HKUnit.meterUnit(with: .centi)
+            let percent = HKUnit.percent()
+            let temp = HKUnit.degreeCelsius()
+            let kkcal = HKUnit.internationalUnit()
+            if data.is(compatibleWith: distance) {
+                result[key] = [distance.unitString: data.doubleValue(for: distance)]
+            } else if data.is(compatibleWith: percent) {
+                result[key] = [percent.unitString: data.doubleValue(for: percent)]
+            } else if data.is(compatibleWith: temp) {
+                result[key] = [temp.unitString: data.doubleValue(for: temp)]
+            } else {
+                print(data)
+            }
+#endif
+        } else {
+#if DEBUG
+            print("metadata : \(key) \(metadata[key] as! String)")
+#endif
         }
     }
     guard !result.isEmpty else {
