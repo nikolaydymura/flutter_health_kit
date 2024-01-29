@@ -6,11 +6,11 @@ import os
 public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
     let binaryMessenger: FlutterBinaryMessenger
     lazy var store: HKHealthStore = { HKHealthStore() }()
-    
+#if FHK_LOGGER
     fileprivate static var logger: Logger = {
         return Logger(subsystem: Bundle.main.bundleIdentifier!, category: "flutter_health_kit")
     }()
-    
+#endif
     var longRunningQueries: [HKSampleType: HKObserverQueryHandler] = [:]
     
     init(binaryMessenger: FlutterBinaryMessenger) {
@@ -25,17 +25,27 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
     }
     
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+#if FHK_LOGGER
+        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public)")
+#endif
         let settings = UserDefaults.standard
         if let items = settings.value(forKey: "BackgroundDeliveryItems") as? [String] {
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) BackgroundDeliveryItems \(items, privacy: .public)")
+#endif
             Task.init {
                 try? await restoreQueries(items: items)
             }
         }
+        
         return true
     }
     
-    func restoreQueries(items: [String]) async throws {
+    private func restoreQueries(items: [String]) async throws {
         let read = items.map { $0.sampleType}.compactMap { $0 }
+#if FHK_LOGGER
+        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(read, privacy: .public)")
+#endif
         try await store.requestAuthorization(toShare: Set(), read: read.toSet)
         try await store.disableAllBackgroundDelivery()
         for item in read {
@@ -53,6 +63,9 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
             }
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) -> \(call.method, privacy: .public) : \(arguments, privacy: .public)")
+#endif
             let toShare = (arguments["toShare"] as? [String])?.map { $0.sampleType}.compactMap { $0 }
             let read = (arguments["read"] as? [String])?.map { $0.objectType}.compactMap { $0 }
             store.requestAuthorization(toShare: toShare?.toSet, read: read?.toSet) { value, error in
@@ -67,6 +80,9 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
             }
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) -> \(call.method, privacy: .public) : \(arguments, privacy: .public)")
+#endif
             guard let type = arguments["sampleType"] as? String, let sampleType = type.sampleType else {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
@@ -121,6 +137,9 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
             }
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) -> \(call.method, privacy: .public) : \(arguments, privacy: .public)")
+#endif
             guard let type = arguments["type"] as? String, let objectType = type.objectType else {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
@@ -137,7 +156,7 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
             let frequency = arguments["frequency"] as? Int ?? 1
             store.enableBackgroundDelivery(for: objectType, frequency: HKUpdateFrequency(rawValue: frequency) ?? HKUpdateFrequency.hourly) { value, error in
                 if let error = error {
-                    result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: error))
+                    result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
                 } else {
                     result(value)
                 }
@@ -147,6 +166,9 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
                 return
             }
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) -> \(call.method, privacy: .public) : \(arguments, privacy: .public)")
+#endif
             let handler = longRunningQueries[sampleType] ?? HKObserverQueryHandler(store: store, sampleType: sampleType)
             
             longRunningQueries[sampleType] = handler
@@ -176,6 +198,9 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
+#if FHK_LOGGER
+        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+#endif
         for item in items {
             events(item.identifier)
         }
@@ -187,7 +212,15 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
     public func start() {
         if query == nil {
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil){query, handler, error in
+#if FHK_LOGGER
+                FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(query.objectType, privacy: .public)")
+                FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+#endif
                 if let error = error {
+#if FHK_LOGGER
+                    FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(query.objectType, privacy: .public)")
+                    FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(error.localizedDescription, privacy: .public)")
+#endif
                     DispatchQueue.main.async {
                         self.eventSink?(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
                     }
@@ -215,6 +248,9 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
     }
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+#if FHK_LOGGER
+        FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(self.items, privacy: .public)")
+#endif
         if let query = self.query {
             store.stop(query)
             self.query = nil
