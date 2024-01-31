@@ -17,7 +17,7 @@ class Workout {
             (e) => e.code == json['workoutActivityType'],
           ) ??
           WorkoutActivityType.other,
-      metadata: json['metadata'] as Map<String, dynamic>?,
+      metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
       duration: Duration(seconds: (json['duration'] as double).toInt()),
     );
   }
@@ -52,7 +52,7 @@ class Quantity {
         ),
         sourceRevision:
             SourceRevision.fromJson(Map.from(json['sourceRevision'])),
-        metadata: json['metadata'] as Map<String, dynamic>?,
+        metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
         quantityType: HKQuantityTypeIdentifier.values.firstWhere(
           (e) => e.identifier == json['quantityType'],
         ),

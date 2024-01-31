@@ -12,7 +12,7 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
             result[key] = metadata[key]
         } else if metadata[key] is Double {
             result[key] = metadata[key]
-        } else if let data = metadata[key] as? HKQuantity {
+        } /*else if let data = metadata[key] as? HKQuantity {
 #if DEBUG
             let distance = HKUnit.meterUnit(with: .centi)
             let percent = HKUnit.percent()
@@ -27,11 +27,10 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
             } else {
                 print(data)
             }
+            print("ignored metadata: \(key) \(String(describing: metadata[key]))")
 #endif
-        } else {
-#if DEBUG
-            print("metadata : \(key) \(metadata[key] as! String)")
-#endif
+        }*/ else {
+            debugPrint("ignored metadata: \(key) \(String(describing: metadata[key]))")
         }
     }
     guard !result.isEmpty else {
@@ -56,7 +55,7 @@ extension HKQuantitySample {
             "values": values,
             "device": device?.toJson,
             "sourceRevision": sourceRevision.toJson,
-            "metadate": metadataToJson(metadata),
+            "metadata": metadataToJson(metadata),
         ].compactMapValues { $0 }
     }
 }
@@ -73,7 +72,7 @@ extension HKWorkout {
             "sourceRevision": sourceRevision.toJson,
             "duration": duration,
             "workoutEvents": [],
-            "metadate": metadataToJson(metadata),
+            "metadata": metadataToJson(metadata),
         ].compactMapValues { $0 }
     }
 }
