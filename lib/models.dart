@@ -31,7 +31,9 @@ class Workout extends Sample {
         ((json['endTimestamp'] as double) * 1000).toInt(),
       ),
       sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
-      device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
+      device: json['device'] != null
+          ? Device.fromJson(Map.from(json['device']))
+          : null,
       workoutActivityType: WorkoutActivityType.values.firstWhereOrNull(
             (e) => e.code == json['workoutActivityType'],
           ) ??
@@ -67,7 +69,9 @@ class Quantity extends Sample {
         ),
         sourceRevision:
             SourceRevision.fromJson(Map.from(json['sourceRevision'])),
-        device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
+        device: json['device'] != null
+            ? Device.fromJson(Map.from(json['device']))
+            : null,
         metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
         quantityType: HKQuantityTypeIdentifier.values.firstWhere(
           (e) => e.identifier == json['quantityType'],
@@ -107,8 +111,12 @@ class Correlation extends Sample {
         (e) => e.identifier == json['correlationType'],
       ),
       sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
-      device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
-      objects: (json['objects'] as List).map((e) => Quantity.fromJson(Map.from(e))).toList(),
+      device: json['device'] != null
+          ? Device.fromJson(Map.from(json['device']))
+          : null,
+      objects: (json['objects'] as List)
+          .map((e) => Quantity.fromJson(Map.from(e)))
+          .toList(),
       metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
     );
   }
@@ -167,8 +175,8 @@ class Device {
         name: json['name'],
         manufacturer: json['manufacturer'],
         model: json['model'],
-        hardware: json['hardware'],
-        software: json['software'],
+        hardware: json['hardwareVersion'],
+        software: json['softwareVersion'],
       );
 
   const Device({
