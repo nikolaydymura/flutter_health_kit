@@ -2,7 +2,25 @@ import 'package:collection/collection.dart';
 
 import 'types.dart';
 
-class Workout {
+abstract class Sample {
+  Sample({
+    required this.uuid,
+    required this.start,
+    required this.end,
+    required this.sourceRevision,
+    required this.device,
+    required this.metadata,
+  });
+
+  final String uuid;
+  final DateTime start;
+  final DateTime end;
+  final SourceRevision sourceRevision;
+  final Device? device;
+  final Map<String, dynamic>? metadata;
+}
+
+class Workout extends Sample {
   factory Workout.fromJson(Map<String, dynamic> json) {
     return Workout(
       uuid: json['uuid'] as String,
@@ -13,6 +31,7 @@ class Workout {
         ((json['endTimestamp'] as double) * 1000).toInt(),
       ),
       sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
+      device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
       workoutActivityType: WorkoutActivityType.values.firstWhereOrNull(
             (e) => e.code == json['workoutActivityType'],
           ) ??
@@ -23,25 +42,21 @@ class Workout {
   }
 
   Workout({
-    required this.uuid,
-    required this.start,
-    required this.end,
-    required this.sourceRevision,
+    required super.uuid,
+    required super.start,
+    required super.end,
+    required super.sourceRevision,
     required this.workoutActivityType,
     required this.duration,
-    this.metadata,
+    super.metadata,
+    super.device,
   });
 
-  final String uuid;
-  final DateTime start;
-  final DateTime end;
-  final SourceRevision sourceRevision;
   final WorkoutActivityType workoutActivityType;
   final Duration duration;
-  final Map<String, dynamic>? metadata;
 }
 
-class Quantity {
+class Quantity extends Sample {
   factory Quantity.fromJson(Map<String, dynamic> json) => Quantity(
         uuid: json['uuid'] as String,
         start: DateTime.fromMillisecondsSinceEpoch(
@@ -52,6 +67,7 @@ class Quantity {
         ),
         sourceRevision:
             SourceRevision.fromJson(Map.from(json['sourceRevision'])),
+        device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
         metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
         quantityType: HKQuantityTypeIdentifier.values.firstWhere(
           (e) => e.identifier == json['quantityType'],
@@ -61,24 +77,55 @@ class Quantity {
       );
 
   Quantity({
-    required this.uuid,
-    required this.start,
-    required this.end,
-    required this.sourceRevision,
+    required super.uuid,
+    required super.start,
+    required super.end,
+    required super.sourceRevision,
     required this.quantityType,
     required this.count,
     required this.values,
-    this.metadata,
+    super.metadata,
+    super.device,
   });
 
-  final String uuid;
-  final DateTime start;
-  final DateTime end;
-  final SourceRevision sourceRevision;
   final HKQuantityTypeIdentifier quantityType;
   final int count;
-  final Map<String, dynamic>? metadata;
   final Map<String, double> values;
+}
+
+class Correlation extends Sample {
+  factory Correlation.fromJson(Map<String, dynamic> json) {
+    return Correlation(
+      uuid: json['uuid'] as String,
+      start: DateTime.fromMillisecondsSinceEpoch(
+        ((json['startTimestamp'] as double) * 1000).toInt(),
+      ),
+      end: DateTime.fromMillisecondsSinceEpoch(
+        ((json['endTimestamp'] as double) * 1000).toInt(),
+      ),
+      correlationType: HKCorrelationTypeIdentifier.values.firstWhere(
+        (e) => e.identifier == json['correlationType'],
+      ),
+      sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
+      device: json['device'] != null ? Device.fromJson(Map.from(json['device'])) : null,
+      objects: (json['objects'] as List).map((e) => Quantity.fromJson(Map.from(e))).toList(),
+      metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
+    );
+  }
+
+  Correlation({
+    required super.uuid,
+    required super.start,
+    required super.end,
+    required super.sourceRevision,
+    required this.objects,
+    required this.correlationType,
+    super.metadata,
+    super.device,
+  });
+
+  final List<Quantity> objects;
+  final HKCorrelationTypeIdentifier correlationType;
 }
 
 class SourceRevision {
@@ -112,6 +159,38 @@ class SourceRevision {
         'productType': productType,
         'systemVersion': systemVersion,
         'operatingSystemVersion': operatingSystemVersion.toJson(),
+      };
+}
+
+class Device {
+  factory Device.fromJson(Map<String, dynamic> json) => Device(
+        name: json['name'],
+        manufacturer: json['manufacturer'],
+        model: json['model'],
+        hardware: json['hardware'],
+        software: json['software'],
+      );
+
+  const Device({
+    required this.name,
+    required this.manufacturer,
+    required this.model,
+    required this.hardware,
+    required this.software,
+  });
+
+  final String name;
+  final String manufacturer;
+  final String model;
+  final String hardware;
+  final String software;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'manufacturer': manufacturer,
+        'model': model,
+        'hardware': hardware,
+        'software': software,
       };
 }
 

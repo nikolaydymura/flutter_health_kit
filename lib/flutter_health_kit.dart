@@ -8,6 +8,7 @@ class FlutterHealthKit {
   static final mappers = <Type, dynamic Function(Map<dynamic, dynamic>)>{
     Workout: (map) => Workout.fromJson(Map.from(map)),
     Quantity: (map) => Quantity.fromJson(Map.from(map)),
+    Correlation: (map) => Correlation.fromJson(Map.from(map)),
   };
 
   static Future<bool> requestAuthorization({
@@ -41,7 +42,7 @@ class FlutterHealthKit {
     return stream.map((event) => ObjectTypeId.fromIdentifier(event));
   }
 
-  static Future<List<T>> querySampleType<T>(
+  static Future<List<T>> querySampleType<T extends Sample>(
     SampleTypeId type, {
     int? limit,
     PredicateDescriptor? predicate,

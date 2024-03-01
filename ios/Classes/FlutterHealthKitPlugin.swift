@@ -104,6 +104,22 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                     }
                     return
                 }
+                let correlations = results.map({ $0 as? HKCorrelation}).compactMap({ $0 })
+                if (!correlations.isEmpty) {
+                    let types = Set(correlations.map { $0.objects.map { $0.sampleType } }.flatMap { $0 }.compactMap { $0 as? HKQuantityType })
+                    self.store.preferredUnits(for: types) { types, error in
+                        if let error = error {
+                            DispatchQueue.main.async {
+                                result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: error))
+                            }
+                            return
+                        }
+                        DispatchQueue.main.async {
+                            result(correlations.map { $0.toJson(types) })
+                        }
+                    }
+                    return
+                }
                 let workouts = results.map({ $0 as? HKWorkout}).compactMap({ $0 })
                 if !workouts.isEmpty {
                     DispatchQueue.main.async {

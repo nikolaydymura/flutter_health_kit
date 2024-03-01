@@ -42,7 +42,7 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
 extension HKQuantitySample {
     func toJson(_ units: [HKQuantityType : HKUnit]) -> [String: Any] {
         var values: [String: Double] = [:]
-        for unit in units.values {
+        if let type = sampleType as? HKQuantityType, let unit = units[type] {
             values[unit.unitString] = quantity.doubleValue(for: unit)
         }
         return [
@@ -72,6 +72,24 @@ extension HKWorkout {
             "sourceRevision": sourceRevision.toJson,
             "duration": duration,
             "workoutEvents": [],
+            "metadata": metadataToJson(metadata),
+        ].compactMapValues { $0 }
+    }
+}
+
+extension HKCorrelation {
+    func toJson(_ units: [HKQuantityType : HKUnit]) -> [String: Any] {
+        return [
+            "uuid": uuid.uuidString,
+            "identifier": sampleType.identifier,
+            "startTimestamp": startDate.timeIntervalSince1970,
+            "endTimestamp": endDate.timeIntervalSince1970,
+            "correlationType": correlationType.identifier,
+            "objects": objects.map {$0 as? HKQuantitySample }
+                .compactMap { $0 }
+                .map { $0.toJson(units)},
+            "device": device?.toJson,
+            "sourceRevision": sourceRevision.toJson,
             "metadata": metadataToJson(metadata),
         ].compactMapValues { $0 }
     }
