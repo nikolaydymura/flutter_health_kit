@@ -1,6 +1,6 @@
 name: flutter_health_kit
 description: Apple HealthKit plugin for Flutter to reading and observing records
-version: 0.0.1-dev.6
+version: 0.0.1-dev.7
 homepage: https://github.com/nikolaydymura/flutter_health_kit
 repository: https://github.com/nikolaydymura/flutter_health_kit
 platforms:

@@ -28,8 +28,7 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
 #if FHK_LOGGER
         FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public)")
 #endif
-        let settings = UserDefaults.standard
-        if let items = settings.value(forKey: "BackgroundDeliveryItems") as? [String] {
+        if let items = UserDefaults.backgroundDeliveryItems {
 #if FHK_LOGGER
             FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) BackgroundDeliveryItems \(items, privacy: .public)")
 #endif
@@ -41,18 +40,18 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
         return true
     }
     
-    private func restoreQueries(items: [String]) async throws {
-        let read = items.map { $0.sampleType}.compactMap { $0 }
+    private func restoreQueries(items: Set<HKSampleType>) async throws {
+        let read = UserDefaults.authorizationReadItems
 #if FHK_LOGGER
         FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) \(read, privacy: .public)")
 #endif
-        try await store.requestAuthorization(toShare: Set(), read: read.toSet)
+        try await store.requestAuthorization(toShare: Set(), read: read)
         try await store.disableAllBackgroundDelivery()
-        for item in read {
+        for item in items {
             let handler = HKObserverQueryHandler(store: store, sampleType: item)
             longRunningQueries[item] = handler
             handler.start()
-            try await store.enableBackgroundDelivery(for: item, frequency: .immediate)
+            try? await store.enableBackgroundDelivery(for: item, frequency: .immediate)
         }
     }
     
@@ -277,4 +276,38 @@ class HKObserverQueryHandler: NSObject, FlutterStreamHandler {
         return nil
     }
     
+}
+
+extension UserDefaults {
+    class var backgroundDeliveryItems: Set<HKSampleType>? {
+        let settings = UserDefaults.standard
+        if let items = settings.value(forKey: "BackgroundDeliveryItems") as? [String] {
+            let values = items.map { $0.sampleType}.compactMap { $0 }.toSet
+            if values.isEmpty {
+                return nil
+            }
+            return values
+        }
+        
+        return nil
+    }
+    
+    class var authorizationReadItems: Set<HKSampleType> {
+        if let items = UserDefaults.backgroundDeliveryItems {
+            var values = Set<HKSampleType?>()
+            for item in items {
+                if item is HKCorrelationType {
+                    if item.identifier == HKCorrelationTypeIdentifier.bloodPressure.rawValue {
+                        values.insert(HKQuantityTypeIdentifier.bloodPressureSystolic.rawValue.sampleType)
+                        values.insert(HKQuantityTypeIdentifier.bloodPressureDiastolic.rawValue.sampleType)
+                    }
+                } else {
+                    values.insert(item)
+                }
+            }
+            return values.compactMap { $0 }.toSet
+        }
+        
+        return Set()
+    }
 }

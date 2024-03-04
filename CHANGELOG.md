@@ -1,3 +1,7 @@
+## 0.0.1-dev.7
+
+* Fixed CorrelationQuery in background mode
+
 ## 0.0.1-dev.6
 
 * Added Correlation for queries
