@@ -187,18 +187,18 @@ class Device {
     required this.software,
   });
 
-  final String name;
-  final String manufacturer;
-  final String model;
-  final String hardware;
-  final String software;
+  final String? name;
+  final String? manufacturer;
+  final String? model;
+  final String? hardware;
+  final String? software;
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'manufacturer': manufacturer,
         'model': model,
-        'hardware': hardware,
-        'software': software,
+        'hardwareVersion': hardware,
+        'softwareVersion': software,
       };
 }
 

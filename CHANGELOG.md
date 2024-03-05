@@ -1,3 +1,7 @@
+## 0.0.1-dev.8
+
+* Fixed Device null fields
+
 ## 0.0.1-dev.7
 
 * Fixed CorrelationQuery in background mode
