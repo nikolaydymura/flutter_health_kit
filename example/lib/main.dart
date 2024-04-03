@@ -36,6 +36,7 @@ class _MyAppState extends State<MyApp> {
           read: [HKSampleTypeIdentifier.workout]);
       status = result ? 'Authorized' : 'Not Authorized';
       final workouts = await FlutterHealthKit.querySampleType<Workout>(HKSampleTypeIdentifier.workout);
+      debugPrint('Workouts: ${workouts.length}');
     } on PlatformException {
       status = 'Failed to get authorization.';
     }

@@ -1,3 +1,5 @@
+import 'operator_type.dart';
+
 typedef PredicateDescriptor = Map<String, dynamic>;
 
 class Predicate {
@@ -13,5 +15,33 @@ class Predicate {
         'end': end.millisecondsSinceEpoch / 1000,
         if (strictStartDate != null) 'strictStartDate': strictStartDate,
         if (strictEndDate != null) 'strictEndDate': strictEndDate,
+      };
+
+  static PredicateDescriptor predicateForObjectsWithMetadataKey({
+    required String key,
+    required OperatorType operator,
+    required dynamic value,
+  }) =>
+      {
+        'code': 'predicateForObjectsWithMetadataKey',
+        'key': key,
+        'operatorType': operator.code,
+        'value': value,
+      };
+
+  static PredicateDescriptor or(
+    Iterable<Predicate> predicates,
+  ) =>
+      {
+        'code': 'or',
+        'predicates': predicates.toList(),
+      };
+
+  static PredicateDescriptor and(
+    Iterable<Predicate> predicates,
+  ) =>
+      {
+        'code': 'and',
+        'predicates': predicates.toList(),
       };
 }

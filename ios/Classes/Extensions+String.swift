@@ -5,7 +5,18 @@ extension [String: Any] {
         guard let code = self["code"] as? String else {
             return nil
         }
-        if code == "predicateForSamples" {
+        if code == "or" {
+            guard let predicates = self["predicates"] as? [Any] else {
+                return nil
+            }
+            return NSCompoundPredicate(orPredicateWithSubpredicates: predicates.map { ($0 as! [String: Any]).predicate }.compactMap { $0 })
+        } else if code == "and" {
+            guard let predicates = self["predicates"] as? [Any] else {
+                return nil
+            }
+            return NSCompoundPredicate(andPredicateWithSubpredicates: predicates.map { ($0 as! [String: Any]).predicate }.compactMap { $0 })
+            
+        } else if code == "predicateForSamples" {
             guard let start = self["withStart"] as? Double else {
                 return nil
             }
@@ -28,6 +39,17 @@ extension [String: Any] {
                 end: endDate,
                 options: options
             )
+        }  else if code == "predicateForObjectsWithMetadataKey" {
+            guard let key = self["key"] as? String else {
+                return nil
+            }
+            guard let op = self["operatorType"] as? String, let operatorType = op.operatorType else {
+                return nil
+            }
+            guard let value = self["value"] else {
+                return nil
+            }
+            return HKQuery.predicateForObjects(withMetadataKey: key, operatorType: operatorType, value: value)
         }
         return nil
     }
@@ -711,5 +733,43 @@ extension String {
             return HKClinicalTypeIdentifier.coverageRecord
         }
         return nil
+    }
+}
+
+
+extension String {
+    var operatorType: NSComparisonPredicate.Operator? {
+        switch self {
+        case "lessThan":
+            return .lessThan
+        case "lessThanOrEqualTo":
+            return .lessThanOrEqualTo
+        case "greaterThan":
+            return .greaterThan
+        case "greaterThanOrEqualTo":
+            return .greaterThanOrEqualTo
+        case "equalTo":
+            return .equalTo
+        case "notEqualTo":
+            return .notEqualTo
+        case "matches":
+            return .matches
+        case "like":
+            return .like
+        case "beginsWith":
+            return .beginsWith
+        case "endsWith":
+            return .endsWith
+        case "in":
+            return .in
+        case "customSelector":
+            return .customSelector
+        case "contains":
+            return .contains
+        case "between":
+            return .between
+        default:
+            return nil
+        }
     }
 }

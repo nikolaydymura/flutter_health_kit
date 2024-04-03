@@ -1,3 +1,8 @@
+## 0.0.1-dev.9
+
+* Added `and` and `or` operators for `Predicate`
+* Added `predicateForObjectsWithMetadataKey` predicate for Query
+
 ## 0.0.1-dev.8
 
 * Fixed Device null fields
