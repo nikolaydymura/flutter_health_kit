@@ -30,7 +30,7 @@ class Predicate {
       };
 
   static PredicateDescriptor or(
-    Iterable<Predicate> predicates,
+    Iterable<PredicateDescriptor> predicates,
   ) =>
       {
         'code': 'or',
@@ -38,7 +38,7 @@ class Predicate {
       };
 
   static PredicateDescriptor and(
-    Iterable<Predicate> predicates,
+    Iterable<PredicateDescriptor> predicates,
   ) =>
       {
         'code': 'and',

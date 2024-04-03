@@ -1,3 +1,7 @@
+## 0.0.1-dev.10
+
+* Fixed `and` and `or` operators
+
 ## 0.0.1-dev.9
 
 * Added `and` and `or` operators for `Predicate`
