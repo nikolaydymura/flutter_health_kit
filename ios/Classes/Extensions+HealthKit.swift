@@ -37,6 +37,7 @@ extension HKQuantity {
         HKUnit.volt(),
         HKUnit.count().unitDivided(by: HKUnit.minute()),
         HKUnit.kilocalorie().unitDivided(by: HKUnit.minute()),
+        HKUnit.kilocalorie().unitDivided(by: HKUnit.hour().unitMultiplied(by: HKUnit.gramUnit(with: HKMetricPrefix.kilo))),
         HKUnit.watt(),
         HKUnit.kilocalorie()
     ]
