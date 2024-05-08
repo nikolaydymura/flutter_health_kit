@@ -12,24 +12,9 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
             result[key] = metadata[key]
         } else if metadata[key] is Double {
             result[key] = metadata[key]
-        } /*else if let data = metadata[key] as? HKQuantity {
-#if DEBUG
-            let distance = HKUnit.meterUnit(with: .centi)
-            let percent = HKUnit.percent()
-            let temp = HKUnit.degreeCelsius()
-            let kkcal = HKUnit.internationalUnit()
-            if data.is(compatibleWith: distance) {
-                result[key] = [distance.unitString: data.doubleValue(for: distance)]
-            } else if data.is(compatibleWith: percent) {
-                result[key] = [percent.unitString: data.doubleValue(for: percent)]
-            } else if data.is(compatibleWith: temp) {
-                result[key] = [temp.unitString: data.doubleValue(for: temp)]
-            } else {
-                print(data)
-            }
-            print("ignored metadata: \(key) \(String(describing: metadata[key]))")
-#endif
-        }*/ else {
+        } else if let data = metadata[key] as? HKQuantity {
+            result[key] = data.toJson
+        } else {
             debugPrint("ignored metadata: \(key) \(String(describing: metadata[key]))")
         }
     }
@@ -37,6 +22,36 @@ private func metadataToJson(_ metadata: [String: Any]?) -> [String: Any]? {
         return nil
     }
     return result
+}
+
+extension HKQuantity {
+    static var allUnits: [HKUnit] = [
+        HKUnit.percent(),
+        HKUnit.meter(),
+        HKUnit.degreeCelsius(),
+        HKUnit.hertz(),
+        HKUnit.atmosphere(),
+        HKUnit.count(),
+        HKUnit.minute(),
+        HKUnit.gram(),
+        HKUnit.volt(),
+        HKUnit.count().unitDivided(by: HKUnit.minute()),
+        HKUnit.kilocalorie().unitDivided(by: HKUnit.minute()),
+        HKUnit.watt(),
+        HKUnit.kilocalorie()
+    ]
+    var toJson: [String: Double] {
+        var values: [String: Double] = [:]
+        for unit in HKQuantity.allUnits {
+            if self.is(compatibleWith: unit) {
+                values[unit.unitString] = doubleValue(for: unit)
+            }
+        }
+        if values.isEmpty {
+            debugPrint("failed to convert units: \(self)")
+        }
+        return values
+    }
 }
 
 extension HKQuantitySample {
@@ -88,6 +103,25 @@ extension HKCorrelation {
             "objects": objects.map {$0 as? HKQuantitySample }
                 .compactMap { $0 }
                 .map { $0.toJson(units)},
+            "device": device?.toJson,
+            "sourceRevision": sourceRevision.toJson,
+            "metadata": metadataToJson(metadata),
+        ].compactMapValues { $0 }
+    }
+}
+
+extension HKElectrocardiogram {
+    var toJson : [String: Any] {
+        return [
+            "uuid": uuid.uuidString,
+            "identifier": sampleType.identifier,
+            "startTimestamp": startDate.timeIntervalSince1970,
+            "endTimestamp": endDate.timeIntervalSince1970,
+            "numberOfVoltageMeasurements": numberOfVoltageMeasurements,
+            "samplingFrequency": samplingFrequency?.toJson,
+            "classification": classification.rawValue,
+            "averageHeartRate": averageHeartRate?.toJson,
+            "symptomsStatus": symptomsStatus.rawValue,
             "device": device?.toJson,
             "sourceRevision": sourceRevision.toJson,
             "metadata": metadataToJson(metadata),

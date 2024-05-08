@@ -9,8 +9,13 @@ class FlutterHealthKit {
     Workout: (map) => Workout.fromJson(Map.from(map)),
     Quantity: (map) => Quantity.fromJson(Map.from(map)),
     Correlation: (map) => Correlation.fromJson(Map.from(map)),
+    Electrocardiogram: (map) => Electrocardiogram.fromJson(Map.from(map)),
   };
 
+  /// Requests authorization to access health data.
+  ///
+  /// [toShare] is a list of [SampleTypeId] that the app wants to write data to.
+  /// [read] is a list of [ObjectTypeId] that the app wants to read data from.
   static Future<bool> requestAuthorization({
     List<SampleTypeId>? toShare,
     List<ObjectTypeId>? read,
@@ -21,6 +26,10 @@ class FlutterHealthKit {
     );
   }
 
+  /// Enables background delivery of health data.
+  ///
+  /// [type] is the [ObjectTypeId] to enable background delivery for.
+  /// [frequency] is the [UpdateFrequency] to deliver the data.
   static Future<bool> enableBackgroundDelivery(
     ObjectTypeId type, [
     UpdateFrequency frequency = UpdateFrequency.hourly,
@@ -29,6 +38,11 @@ class FlutterHealthKit {
         .enableBackgroundDelivery(type.identifier, frequency.code);
   }
 
+  /// Queries health data.
+  ///
+  /// [type] is the [ObjectTypeId] to query.
+  /// [startDate] is the start date of the query.
+  /// [endDate] is the end date of the query.
   static Future<Stream<ObjectTypeId>> observeQuery(
     ObjectTypeId type, {
     DateTime? startDate,
@@ -42,6 +56,12 @@ class FlutterHealthKit {
     return stream.map((event) => ObjectTypeId.fromIdentifier(event));
   }
 
+  /// Queries health data.
+  ///
+  /// [type] is the [SampleTypeId] to query.
+  /// [limit] is the maximum number of samples to return.
+  /// [predicate] is a [PredicateDescriptor] to filter the samples.
+  /// [sortDescriptors] is a list of [SortDescriptor] to sort the samples.
   static Future<List<T>> querySampleType<T extends Sample>(
     SampleTypeId type, {
     int? limit,

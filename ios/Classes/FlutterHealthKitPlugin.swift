@@ -126,6 +126,13 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                     }
                     return
                 }
+                let cardiograms = results.map( { $0 as? HKElectrocardiogram}).compactMap( { $0 })
+                if !cardiograms.isEmpty {
+                    DispatchQueue.main.async {
+                        result(cardiograms.map { $0.toJson })
+                    }
+                    return
+                }
                 let quantities = results.map({ $0 as? HKQuantitySample}).compactMap({ $0 })
                 if !quantities.isEmpty {
                     let unitTypes = [sampleType].map( { $0 as? HKQuantityType}).compactMap({ $0 })

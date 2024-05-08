@@ -1,3 +1,7 @@
+## 0.0.1-dev.11
+
+* Added `Electrocardiogram` & extended metadata
+
 ## 0.0.1-dev.10
 
 * Fixed `and` and `or` operators

@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 
 import 'types.dart';
 
+/// A sample of data collected by HealthKit.
 abstract class Sample {
   Sample({
     required this.uuid,
@@ -12,14 +13,26 @@ abstract class Sample {
     required this.metadata,
   });
 
+  /// The unique identifier of the sample.
   final String uuid;
+
+  /// The start date of the sample.
   final DateTime start;
+
+  /// The end date of the sample.
   final DateTime end;
+
+  /// The source revision of the sample.
   final SourceRevision sourceRevision;
+
+  /// The device that collected the sample.
   final Device? device;
+
+  /// Additional metadata for the sample.
   final Map<String, dynamic>? metadata;
 }
 
+/// A workout sample.
 class Workout extends Sample {
   factory Workout.fromJson(Map<String, dynamic> json) {
     return Workout(
@@ -54,10 +67,14 @@ class Workout extends Sample {
     super.device,
   });
 
+  /// The type of workout.
   final WorkoutActivityType workoutActivityType;
+
+  /// The duration of the workout.
   final Duration duration;
 }
 
+/// A quantity sample.
 class Quantity extends Sample {
   factory Quantity.fromJson(Map<String, dynamic> json) => Quantity(
         uuid: json['uuid'] as String,
@@ -92,11 +109,79 @@ class Quantity extends Sample {
     super.device,
   });
 
+  /// The type of quantity.
   final HKQuantityTypeIdentifier quantityType;
+
+  /// The number of values.
   final int count;
+
+  /// The values of the quantity.
   final Map<String, double> values;
 }
 
+/// An electrocardiogram sample.
+class Electrocardiogram extends Sample {
+  factory Electrocardiogram.fromJson(Map<String, dynamic> json) =>
+      Electrocardiogram(
+        uuid: json['uuid'] as String,
+        start: DateTime.fromMillisecondsSinceEpoch(
+          ((json['startTimestamp'] as double) * 1000).toInt(),
+        ),
+        end: DateTime.fromMillisecondsSinceEpoch(
+          ((json['endTimestamp'] as double) * 1000).toInt(),
+        ),
+        sourceRevision:
+            SourceRevision.fromJson(Map.from(json['sourceRevision'])),
+        device: json['device'] != null
+            ? Device.fromJson(Map.from(json['device']))
+            : null,
+        metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
+        symptomsStatus: SymptomsStatus.values.firstWhere(
+          (e) => e.code == json['symptomsStatus'],
+        ),
+        classification: Classification.values.firstWhere(
+          (e) => e.code == json['classification'],
+        ),
+        numberOfVoltageMeasurements: json['numberOfVoltageMeasurements'] as int,
+        averageHeartRate: json['averageHeartRate'] != null
+            ? Map.from(json['averageHeartRate'])
+            : null,
+        samplingFrequency: json['samplingFrequency'] != null
+            ? Map.from(json['samplingFrequency'])
+            : null,
+      );
+
+  Electrocardiogram({
+    required super.uuid,
+    required super.start,
+    required super.end,
+    required super.sourceRevision,
+    required this.numberOfVoltageMeasurements,
+    required this.symptomsStatus,
+    required this.classification,
+    this.averageHeartRate,
+    this.samplingFrequency,
+    super.metadata,
+    super.device,
+  });
+
+  /// The number of voltage measurements.
+  final int numberOfVoltageMeasurements;
+
+  /// The symptoms status.
+  final SymptomsStatus symptomsStatus;
+
+  /// The classification of the electrocardiogram.
+  final Classification classification;
+
+  /// The average heart rate.
+  final Map<String, double>? averageHeartRate;
+
+  /// The sampling frequency.
+  final Map<String, double>? samplingFrequency;
+}
+
+/// A correlation sample.
 class Correlation extends Sample {
   factory Correlation.fromJson(Map<String, dynamic> json) {
     return Correlation(
@@ -132,10 +217,14 @@ class Correlation extends Sample {
     super.device,
   });
 
+  /// The type of correlation.
   final List<Quantity> objects;
+
+  /// The objects of the correlation.
   final HKCorrelationTypeIdentifier correlationType;
 }
 
+/// A source revision.
 class SourceRevision {
   factory SourceRevision.fromJson(Map<String, dynamic> json) => SourceRevision(
         source: Source.fromJson(Map.from(json['source'])),
@@ -153,11 +242,19 @@ class SourceRevision {
     this.productType,
   });
 
+  /// The source of the revision.
   final Source source;
+
+  /// The version of the revision.
   final String? version;
+
+  /// The product type of the revision.
   final String? productType;
+
+  /// The operating system version of the revision.
   final OperatingSystemVersion operatingSystemVersion;
 
+  /// The system version of the revision.
   String get systemVersion =>
       '${operatingSystemVersion.majorVersion}.${operatingSystemVersion.minorVersion}.${operatingSystemVersion.patchVersion}';
 
@@ -170,6 +267,7 @@ class SourceRevision {
       };
 }
 
+/// A device.
 class Device {
   factory Device.fromJson(Map<String, dynamic> json) => Device(
         name: json['name'],
@@ -187,10 +285,19 @@ class Device {
     required this.software,
   });
 
+  /// The name of the device.
   final String? name;
+
+  /// The manufacturer of the device.
   final String? manufacturer;
+
+  /// The model of the device.
   final String? model;
+
+  /// The hardware version of the device.
   final String? hardware;
+
+  /// The software version of the device.
   final String? software;
 
   Map<String, dynamic> toJson() => {
@@ -202,6 +309,7 @@ class Device {
       };
 }
 
+/// A source.
 class Source {
   factory Source.fromJson(Map<String, dynamic> json) => Source(
         name: json['name'],
@@ -213,7 +321,10 @@ class Source {
     required this.bundleIdentifier,
   });
 
+  /// The name of the source.
   final String name;
+
+  /// The bundle identifier of the source.
   final String bundleIdentifier;
 
   Map<String, dynamic> toJson() => {
@@ -222,6 +333,7 @@ class Source {
       };
 }
 
+/// An operating system version.
 class OperatingSystemVersion {
   factory OperatingSystemVersion.fromJson(Map<String, dynamic> json) =>
       OperatingSystemVersion(
@@ -236,8 +348,13 @@ class OperatingSystemVersion {
     required this.patchVersion,
   });
 
+  /// The major version of the operating system.
   final int majorVersion;
+
+  /// The minor version of the operating system.
   final int minorVersion;
+
+  /// The patch version of the operating system.
   final int patchVersion;
 
   Map<String, dynamic> toJson() => {
@@ -247,6 +364,7 @@ class OperatingSystemVersion {
       };
 }
 
+/// A workout activity type.
 enum WorkoutActivityType {
   americanFootball._(1),
   archery._(2),
@@ -338,6 +456,7 @@ enum WorkoutActivityType {
   final int code;
 }
 
+/// Update frequency for background delivery.
 enum UpdateFrequency {
   immediate._(1),
   hourly._(2),
@@ -345,6 +464,33 @@ enum UpdateFrequency {
   weekly._(4);
 
   const UpdateFrequency._(this.code);
+
+  final int code;
+}
+
+/// Symptoms status.
+enum SymptomsStatus {
+  notSet._(0),
+  none._(1),
+  present._(2);
+
+  const SymptomsStatus._(this.code);
+
+  final int code;
+}
+
+/// Classification of an electrocardiogram.
+enum Classification {
+  notSet._(0),
+  sinusRhythm._(1),
+  atrialFibrillation._(2),
+  inconclusiveLowHeartRate._(3),
+  inconclusiveHighHeartRate._(4),
+  inconclusivePoorReading._(5),
+  inconclusiveOther._(6),
+  unrecognized._(100);
+
+  const Classification._(this.code);
 
   final int code;
 }
