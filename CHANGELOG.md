@@ -1,3 +1,7 @@
+## 0.0.1-dev.13
+
+Added statistics query
+
 ## 0.0.1-dev.12
 
 Fixed HKAverageMETs metadata

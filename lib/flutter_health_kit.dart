@@ -76,4 +76,17 @@ class FlutterHealthKit {
     );
     return result.map((e) => mappers[T]?.call(e)).whereType<T>().toList();
   }
+
+  static Future<List<T>> queryStatistics<T extends Sample>(
+    HKQuantityTypeIdentifier type, {
+    PredicateDescriptor? predicate,
+    Iterable<HKStatisticsOptions>? options,
+  }) async {
+    final result = await FlutterHealthKitPlatform.instance.queryStatistics(
+      type.identifier,
+      predicate: predicate,
+      options: options?.map((e) => e.code).toList(),
+    );
+    return result.map((e) => mappers[T]?.call(e)).whereType<T>().toList();
+  }
 }

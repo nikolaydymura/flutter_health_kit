@@ -154,6 +154,42 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 }
             }
             store.execute(query)
+        case "queryStatistics":
+            guard let arguments = call.arguments as? [String: Any] else {
+                result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
+                return
+            }
+#if FHK_LOGGER
+            FlutterHealthKitPlugin.logger.warning("\(#function, privacy: .public) -> \(call.method, privacy: .public) : \(arguments, privacy: .public)")
+#endif
+            guard let type = arguments["quantityType"] as? String, let sampleType = type.quantityTypeIdentifier else {
+                result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
+                return
+            }
+            let options: [Int] = arguments["options"] as? [Int] ?? [];
+                
+            var statisticsOptions: HKStatisticsOptions = []
+            for option in options {
+                statisticsOptions.insert(HKStatisticsOptions(rawValue: UInt(option)))
+            }
+            let predicate = arguments["predicate"] as? [String: Any]
+            let query = HKStatisticsQuery(quantityType: HKQuantityType(sampleType), 
+                                          quantitySamplePredicate: predicate?.predicate,
+                                          options: statisticsOptions) { (_, data, error) in
+                guard
+                    error == nil,
+                    let results = data
+                else {
+                    DispatchQueue.main.async {
+                        result(FlutterError(code: "flutter_health_kit", message: error?.localizedDescription, details: nil))
+                    }
+                    return
+                }
+                DispatchQueue.main.async {
+                    result([])
+                }
+            }
+            store.execute(query)
         case "enableBackgroundDelivery":
             guard let arguments = call.arguments as? [String: Any] else {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))

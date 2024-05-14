@@ -68,4 +68,19 @@ class MethodChannelFlutterHealthKit extends FlutterHealthKitPlatform {
     });
     return result ?? [];
   }
+
+  @override
+  Future<List<Map<dynamic, dynamic>>> queryStatistics(
+    String type, {
+    Map<String, dynamic>? predicate,
+    Iterable<int>? options,
+  }) async {
+    final result = await methodChannel.invokeListMethod<Map<dynamic, dynamic>>(
+        'queryStatistics', <String, dynamic>{
+      'quantityType': type,
+      if (predicate != null && predicate.isNotEmpty) 'predicate': predicate,
+      if (options != null && options.isNotEmpty) 'options': options,
+    });
+    return result ?? [];
+  }
 }

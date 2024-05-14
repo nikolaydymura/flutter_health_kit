@@ -11,6 +11,7 @@ abstract class Sample {
     required this.sourceRevision,
     required this.device,
     required this.metadata,
+    required this.type,
   });
 
   /// The unique identifier of the sample.
@@ -30,6 +31,9 @@ abstract class Sample {
 
   /// Additional metadata for the sample.
   final Map<String, dynamic>? metadata;
+
+  /// The type of the sample.
+  final SampleTypeId type;
 }
 
 /// A workout sample.
@@ -65,6 +69,7 @@ class Workout extends Sample {
     required this.duration,
     super.metadata,
     super.device,
+    super.type = HKSampleTypeIdentifier.workout,
   });
 
   /// The type of workout.
@@ -90,7 +95,7 @@ class Quantity extends Sample {
             ? Device.fromJson(Map.from(json['device']))
             : null,
         metadata: json['metadata'] != null ? Map.from(json['metadata']) : null,
-        quantityType: HKQuantityTypeIdentifier.values.firstWhere(
+        type: HKQuantityTypeIdentifier.values.firstWhere(
           (e) => e.identifier == json['quantityType'],
         ),
         count: json['count'] as int,
@@ -102,7 +107,7 @@ class Quantity extends Sample {
     required super.start,
     required super.end,
     required super.sourceRevision,
-    required this.quantityType,
+    required super.type,
     required this.count,
     required this.values,
     super.metadata,
@@ -110,7 +115,7 @@ class Quantity extends Sample {
   });
 
   /// The type of quantity.
-  final HKQuantityTypeIdentifier quantityType;
+  HKQuantityTypeIdentifier get quantityType => type as HKQuantityTypeIdentifier;
 
   /// The number of values.
   final int count;
@@ -163,6 +168,7 @@ class Electrocardiogram extends Sample {
     this.samplingFrequency,
     super.metadata,
     super.device,
+    super.type = HKSampleTypeIdentifier.dataElectrocardiogram,
   });
 
   /// The number of voltage measurements.
@@ -192,7 +198,7 @@ class Correlation extends Sample {
       end: DateTime.fromMillisecondsSinceEpoch(
         ((json['endTimestamp'] as double) * 1000).toInt(),
       ),
-      correlationType: HKCorrelationTypeIdentifier.values.firstWhere(
+      type: HKCorrelationTypeIdentifier.values.firstWhere(
         (e) => e.identifier == json['correlationType'],
       ),
       sourceRevision: SourceRevision.fromJson(Map.from(json['sourceRevision'])),
@@ -212,7 +218,7 @@ class Correlation extends Sample {
     required super.end,
     required super.sourceRevision,
     required this.objects,
-    required this.correlationType,
+    required super.type,
     super.metadata,
     super.device,
   });
@@ -221,7 +227,8 @@ class Correlation extends Sample {
   final List<Quantity> objects;
 
   /// The objects of the correlation.
-  final HKCorrelationTypeIdentifier correlationType;
+  HKCorrelationTypeIdentifier get correlationType =>
+      type as HKCorrelationTypeIdentifier;
 }
 
 /// A source revision.
@@ -491,6 +498,20 @@ enum Classification {
   unrecognized._(100);
 
   const Classification._(this.code);
+
+  final int code;
+}
+
+enum HKStatisticsOptions {
+  separateBySource._(1),
+  discreteAverage._(2),
+  discreteMin._(4),
+  discreteMax._(8),
+  cumulativeSum._(16),
+  mostRecent._(32),
+  duration._(64);
+
+  const HKStatisticsOptions._(this.code);
 
   final int code;
 }
