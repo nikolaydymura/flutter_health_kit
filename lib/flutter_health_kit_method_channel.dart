@@ -83,4 +83,15 @@ class MethodChannelFlutterHealthKit extends FlutterHealthKitPlatform {
     });
     return result ?? [];
   }
+
+  @override
+  Future<List<Map<dynamic, dynamic>>> queryElectrocardiogram(
+    String uuid,
+  ) async {
+    final result = await methodChannel.invokeListMethod<Map<dynamic, dynamic>>(
+      'queryElectrocardiogram',
+      uuid,
+    );
+    return result ?? [];
+  }
 }

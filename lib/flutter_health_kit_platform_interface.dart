@@ -62,4 +62,12 @@ abstract class FlutterHealthKitPlatform extends PlatformInterface {
   }) {
     throw UnimplementedError('observeQuery() has not been implemented.');
   }
+
+  Future<List<Map<dynamic, dynamic>>> queryElectrocardiogram(
+    String uuid,
+  ) {
+    throw UnimplementedError(
+      'queryElectrocardiogram() has not been implemented.',
+    );
+  }
 }

@@ -1,3 +1,7 @@
+## 0.0.1-dev.14
+
+Added electrocardiogram query
+
 ## 0.0.1-dev.13
 
 Added statistics query

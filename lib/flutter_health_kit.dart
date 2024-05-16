@@ -89,4 +89,17 @@ class FlutterHealthKit {
     );
     return result.map((e) => mappers[T]?.call(e)).whereType<T>().toList();
   }
+
+  static Future<List<VoltageMeasurement>> queryElectrocardiogram(
+    Electrocardiogram sample,
+  ) async {
+    final result =
+        await FlutterHealthKitPlatform.instance.queryElectrocardiogram(
+      sample.uuid,
+    );
+    return result
+        .map((e) => VoltageMeasurement.fromJson(Map.from(e)))
+        .whereType<VoltageMeasurement>()
+        .toList();
+  }
 }

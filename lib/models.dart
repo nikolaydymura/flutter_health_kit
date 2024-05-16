@@ -187,6 +187,25 @@ class Electrocardiogram extends Sample {
   final Map<String, double>? samplingFrequency;
 }
 
+class VoltageMeasurement {
+  factory VoltageMeasurement.fromJson(Map<String, dynamic> json) =>
+      VoltageMeasurement(
+        timeSinceSampleStart: Duration(
+          milliseconds:
+              ((json['timeSinceSampleStart'] as double) * 1000).toInt(),
+        ),
+        values: Map.from(json['values']),
+      );
+
+  VoltageMeasurement({
+    required this.timeSinceSampleStart,
+    required this.values,
+  });
+
+  final Duration timeSinceSampleStart;
+  final Map<String, double> values;
+}
+
 /// A correlation sample.
 class Correlation extends Sample {
   factory Correlation.fromJson(Map<String, dynamic> json) {

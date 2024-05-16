@@ -154,6 +154,57 @@ public class FlutterHealthKitPlugin: NSObject, FlutterPlugin {
                 }
             }
             store.execute(query)
+        case "queryElectrocardiogram":
+            guard let raw = call.arguments as? String, let uuid = UUID(uuidString: raw) else {
+                result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
+                return
+            }
+            let query0 = HKSampleQuery(sampleType: HKObjectType.electrocardiogramType(), predicate: HKQuery.predicateForObject(with: uuid), limit: 1, sortDescriptors: nil) { _, data0, error0 in
+                guard
+                    error0 == nil,
+                    let ecgSample = data0?.first as? HKElectrocardiogram
+                else {
+                    DispatchQueue.main.async {
+                        result(FlutterError(code: "flutter_health_kit", message: error0?.localizedDescription, details: nil))
+                    }
+                    return
+                }
+                var items: [(TimeInterval, HKQuantity)] = []
+                let query1 = HKElectrocardiogramQuery(ecgSample) { _, value in
+                    switch(value) {
+                        case .measurement(let measurement):
+                        if let voltageQuantity = measurement.quantity(for: .appleWatchSimilarToLeadI) {
+                            items.append((measurement.timeSinceSampleStart, voltageQuantity))
+                            }
+                        
+                        case .done:
+                            DispatchQueue.main.async {
+                                result(items.map { (time, quantity) in
+                                    return ["timeSinceSampleStart": time, "values": quantity.toJson]
+                                })
+                            }
+                        return
+
+
+                        case .error(let error):
+                            DispatchQueue.main.async {
+                                result(FlutterError(code: "flutter_health_kit", message: error.localizedDescription, details: nil))
+                            }
+                            return
+
+
+                    @unknown default:
+                        DispatchQueue.main.async {
+                            result(items.map { (time, quantity) in
+                                return ["timeSinceSampleStart": time, "values": quantity.toJson]
+                            })
+                        }
+                    }
+                }
+                self.store.execute(query1)
+                
+            }
+            store.execute(query0)
         case "queryStatistics":
             guard let arguments = call.arguments as? [String: Any] else {
                 result(FlutterError(code: "flutter_health_kit", message: "\(call.method) invalid arguments \(String(describing: call.arguments))", details: nil))
