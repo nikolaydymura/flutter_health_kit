@@ -1,3 +1,7 @@
+## 0.0.1-dev.15
+
+Updated electrocardiogram query
+
 ## 0.0.1-dev.14
 
 Added electrocardiogram query

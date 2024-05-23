@@ -91,11 +91,11 @@ class FlutterHealthKit {
   }
 
   static Future<List<VoltageMeasurement>> queryElectrocardiogram(
-    Electrocardiogram sample,
+    String uuid,
   ) async {
     final result =
         await FlutterHealthKitPlatform.instance.queryElectrocardiogram(
-      sample.uuid,
+      uuid,
     );
     return result
         .map((e) => VoltageMeasurement.fromJson(Map.from(e)))
